@@ -3,6 +3,7 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-crons.interval("sync roaster shops", { hours: 1 }, internal.sync.syncAll, {});
+crons.interval("sync shop APIs", { minutes: 15 }, internal.sync.syncAll, { only: "api" });
+crons.interval("sync scraped shop pages", { hours: 1 }, internal.sync.syncAll, { only: "pages" });
 
 export default crons;

@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 
 export const list = query({
@@ -20,10 +21,24 @@ export const status = query({
   }),
   handler: async (ctx) => {
     const rates = await ctx.db.query("rates").first();
-    const run = await ctx.db.query("syncRuns").order("desc").first();
+    const latest = new Map<string, Doc<"syncRuns">>();
+    for (const run of await ctx.db.query("syncRuns").order("desc").take(20)) {
+      const scope = run.scope ?? "all";
+      if (scope === "all" && latest.size > 0) break;
+      if (!latest.has(scope)) latest.set(scope, run);
+      if (scope === "all" || latest.size === 2) break;
+    }
+    const runs = [...latest.values()];
     return {
       rates: rates ? { base: rates.base, date: rates.date, rates: rates.rates } : null,
-      lastRun: run ? { finishedAt: run.finishedAt, shops: run.shops, failed: run.failed } : null,
+      lastRun:
+        runs.length === 0
+          ? null
+          : {
+              finishedAt: Math.max(...runs.map((r) => r.finishedAt)),
+              shops: runs.reduce((sum, r) => sum + r.shops, 0),
+              failed: runs.flatMap((r) => r.failed),
+            },
     };
   },
 });

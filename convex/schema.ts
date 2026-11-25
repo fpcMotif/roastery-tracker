@@ -23,6 +23,7 @@ export default defineSchema({
     rates: v.record(v.string(), v.number()),
   }),
   syncRuns: defineTable({
+    scope: v.optional(v.union(v.literal("api"), v.literal("pages"))),
     finishedAt: v.number(),
     shops: v.number(),
     failed: v.array(v.object({ roasteryId: v.string(), error: v.string() })),

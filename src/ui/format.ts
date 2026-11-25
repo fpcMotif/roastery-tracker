@@ -19,7 +19,7 @@ export function money(amount: number, currency: string): string {
 }
 
 export function shortDate(iso: string): string {
-  return iso.slice(0, 10);
+  return iso ? iso.slice(0, 10) : "Unknown";
 }
 
 export function syncedAt(epochMs: number): string {

@@ -71,7 +71,7 @@ function Roasteries() {
             {rows.map((r) => (
               <tr key={r.id} {...stylex.props(ui.tr)}>
                 <Td label="Roaster" styles={[ui.name]}>
-                  {r.shop ? (
+                  {r.feed ? (
                     <Link to="/" search={{ roaster: r.id, period: "all" }} {...stylex.props(ui.link)}>
                       {r.name}
                     </Link>
@@ -82,7 +82,7 @@ function Roasteries() {
                 <Td label="City">{r.city}</Td>
                 <Td label="Country">{COUNTRY_NAMES[r.country]}</Td>
                 <Td label="In stock" styles={[ui.num]}>
-                  {r.shop ? (beans === undefined ? "" : (inStock.get(r.id) ?? 0)) : <span {...stylex.props(ui.muted)}>No feed</span>}
+                  {r.feed ? (beans === undefined ? "" : (inStock.get(r.id) ?? 0)) : <span {...stylex.props(ui.muted)}>No feed</span>}
                 </Td>
                 <Td label="You">{tried.has(r.id) ? "Tried" : <span {...stylex.props(ui.muted)}>Not yet</span>}</Td>
                 <Td label="Note" styles={[ui.muted]}>{r.note ?? ""}</Td>

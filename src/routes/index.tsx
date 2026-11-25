@@ -29,7 +29,7 @@ type LedgerSearch = {
 };
 
 const PAGE = 60;
-const SHOP_COUNTRIES = [...new Set(ROASTERIES.filter((r) => r.shop).map((r) => r.country))];
+const SHOP_COUNTRIES = [...new Set(ROASTERIES.filter((r) => r.feed).map((r) => r.country))];
 const COUNTRY_OF = new Map(ROASTERIES.map((r) => [r.id, r.country]));
 const nonEmpty = (value: unknown) => (typeof value === "string" && value.trim() !== "" ? value : undefined);
 
@@ -72,7 +72,7 @@ function Ledger() {
           (!search.roaster || b.roasteryId === search.roaster) &&
           (!search.country || COUNTRY_OF.get(b.roasteryId) === search.country) &&
           (!needle || `${b.title} ${b.roasteryName}`.toLowerCase().includes(needle)) &&
-          Date.parse(b.publishedAt) >= since,
+          (period === "all" || Date.parse(b.publishedAt) >= since),
       )
       .map((b) => ({ ...b, per100: rates ? convertTo(b.pricePer100g, b.currency, currency, rates) : undefined }));
     return search.sort === "price"
@@ -93,7 +93,7 @@ function Ledger() {
             ? "Checking the last sync…"
             : status.lastRun
               ? `Synced ${syncedAt(status.lastRun.finishedAt)} from ${status.lastRun.shops - status.lastRun.failed.length} of ${status.lastRun.shops} shops. Rates of ${rates?.date ?? "unknown date"}.`
-              : "The first sync has not run yet. It runs every hour."}
+              : "The first sync has not run yet. It runs every 15 minutes."}
         </p>
       </div>
 
@@ -126,7 +126,7 @@ function Ledger() {
         <Field label="Roaster">
           <select value={search.roaster ?? ""} onChange={(e) => set({ roaster: e.target.value || undefined })} {...stylex.props(ui.control)}>
             <option value="">All roasters</option>
-            {ROASTERIES.filter((r) => r.shop && (!search.country || r.country === search.country)).map((r) => (
+            {ROASTERIES.filter((r) => r.feed &&(!search.country || r.country === search.country)).map((r) => (
               <option key={r.id} value={r.id}>{r.name}</option>
             ))}
           </select>
@@ -205,7 +205,7 @@ function Ledger() {
         {rows !== undefined && rows.length === 0 ? (
           <div {...stylex.props(ui.empty)}>
             <p {...stylex.props(ui.p)}>
-              {status?.lastRun ? "No coffees match these filters." : "No coffees yet. The first shop sync fills this page within the hour."}
+              {status?.lastRun ? "No coffees match these filters." : "No coffees yet. The first shop sync fills this page within 15 minutes."}
             </p>
             {filtered ? (
               <button type="button" onClick={() => navigate({ search: {}, replace: true })} {...stylex.props(ui.btn, ui.btnQuiet)}>

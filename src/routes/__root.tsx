@@ -14,7 +14,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Roast ledger" },
-      { name: "description", content: "New coffee releases from 61 specialty roasters, with prices per 100 g in one currency." },
+      { name: "description", content: `New coffee releases from ${ROASTERIES.length} specialty roasters, with prices per 100 g in one currency.` },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -82,8 +82,8 @@ function Shell() {
       </main>
       <footer {...stylex.props(ui.container, ui.foot)}>
         <p {...stylex.props(ui.footText)}>
-          {ROASTERIES.length} roasters in {Object.keys(COUNTRY_NAMES).length} countries. Prices come from each roaster's own shop, checked every
-          hour. Exchange rates are the European Central Bank's, via Frankfurter. Shipping is never included.
+          {ROASTERIES.length} roasters in {Object.keys(COUNTRY_NAMES).length} countries. Prices come from each roaster's own shop, checked every 15
+          minutes, or hourly for shops read page by page. Exchange rates are the European Central Bank's, via Frankfurter. Shipping is never included.
         </p>
       </footer>
     </>

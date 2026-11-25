@@ -48,12 +48,12 @@ function formatBean(b: Bean, rates: Rates): string {
   const converted = convert(b.pricePer100g, b.currency, rates);
   const per100 = converted === undefined ? `? ${rates.base}/100g` : `${converted.toFixed(2)} ${rates.base}/100g`;
   const stock = b.available ? "" : "  [sold out]";
-  return `${b.publishedAt.slice(0, 10)}  ${b.roasteryName.padEnd(26)} ${b.title.slice(0, 48).padEnd(48)} ${price.padStart(24)}  ${per100.padStart(16)}${stock}\n            ${b.url}`;
+  return `${(b.publishedAt || "date unknown").slice(0, 12).padEnd(12)}${b.roasteryName.padEnd(26)} ${b.title.slice(0, 48).padEnd(48)} ${price.padStart(24)}  ${per100.padStart(16)}${stock}\n            ${b.url}`;
 }
 
 async function beansCommand(): Promise<void> {
   const shops = filterRoasteries(ROASTERIES, { country: parseCountry(values.country) }).filter(
-    (r) => r.shop && (!values.roastery || r.id === values.roastery),
+    (r) => r.feed && (!values.roastery || r.id === values.roastery),
   );
   if (shops.length === 0) throw new Error("no roastery with a shop feed matches; run \"roastery list\" for ids");
   const [rates, results] = await Promise.all([
@@ -66,7 +66,7 @@ async function beansCommand(): Promise<void> {
   const since = days ? Date.now() - days * 86_400_000 : 0;
   let beans = results
     .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
-    .filter((b) => (values.all || b.available) && Date.parse(b.publishedAt) >= since);
+    .filter((b) => (values.all || b.available) && (days === undefined || Date.parse(b.publishedAt) >= since));
   if (values.sort === "price") beans = beans.sort((a, b) => per100(a) - per100(b));
   else beans = beans.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   for (const b of beans) console.log(formatBean(b, rates));

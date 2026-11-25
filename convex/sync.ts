@@ -26,38 +26,46 @@ export const replaceRoasteryBeans = internalMutation({
       .query("beans")
       .withIndex("by_roastery", (q) => q.eq("roasteryId", roasteryId))
       .collect();
-    const firstSeen = new Map(existing.map((b) => [b.url, b.firstSeenAt]));
+    const previous = new Map(existing.map((b) => [b.url, b]));
     for (const old of existing) await ctx.db.delete(old._id);
     const now = Date.now();
-    for (const bean of beans) await ctx.db.insert("beans", { ...bean, firstSeenAt: firstSeen.get(bean.url) ?? now });
+    const newSinceLastSync = existing.length > 0 ? new Date(now).toISOString() : "";
+    for (const bean of beans) {
+      const seen = previous.get(bean.url);
+      const publishedAt = bean.publishedAt || (seen ? seen.publishedAt : newSinceLastSync);
+      await ctx.db.insert("beans", { ...bean, publishedAt, firstSeenAt: seen?.firstSeenAt ?? now });
+    }
     return null;
   },
 });
 
 export const saveRun = internalMutation({
   args: {
+    scope: v.optional(v.union(v.literal("api"), v.literal("pages"))),
     rates: v.union(v.null(), v.object({ base: v.string(), date: v.string(), rates: v.record(v.string(), v.number()) })),
     shops: v.number(),
     failed: v.array(v.object({ roasteryId: v.string(), error: v.string() })),
   },
   returns: v.null(),
-  handler: async (ctx, { rates, shops, failed }) => {
+  handler: async (ctx, { scope, rates, shops, failed }) => {
     if (rates) {
       for (const old of await ctx.db.query("rates").take(10)) await ctx.db.delete(old._id);
       await ctx.db.insert("rates", rates);
     }
     const runs = await ctx.db.query("syncRuns").order("desc").take(100);
     for (const old of runs.slice(20)) await ctx.db.delete(old._id);
-    await ctx.db.insert("syncRuns", { finishedAt: Date.now(), shops, failed });
+    await ctx.db.insert("syncRuns", { scope, finishedAt: Date.now(), shops, failed });
     return null;
   },
 });
 
 export const syncAll = internalAction({
-  args: {},
+  args: { only: v.optional(v.union(v.literal("api"), v.literal("pages"))) },
   returns: v.null(),
-  handler: async (ctx) => {
-    const shops = ROASTERIES.filter((r) => r.shop);
+  handler: async (ctx, { only }) => {
+    const shops = ROASTERIES.filter(
+      (r) => r.feed && (only === undefined || (only === "pages") === (r.feed.kind === "pages")),
+    );
     const [rates, ...results] = await Promise.allSettled([fetchRates("USD"), ...shops.map(fetchBeans)]);
     const failed: { roasteryId: string; error: string }[] = [];
     for (const [i, result] of results.entries()) {
@@ -70,6 +78,7 @@ export const syncAll = internalAction({
       }
     }
     await ctx.runMutation(internal.sync.saveRun, {
+      scope: only,
       rates: rates.status === "fulfilled" ? (rates.value as Awaited<ReturnType<typeof fetchRates>>) : null,
       shops: shops.length,
       failed,
