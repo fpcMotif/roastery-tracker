@@ -5,6 +5,8 @@ import { ROASTERIES } from "../src/roasteries.ts";
 import { fetchBeans } from "../src/shop.ts";
 import { fetchRates } from "../src/fx.ts";
 
+const KEEP_RUNS_FOR = 2 * 24 * 3_600_000;
+
 const beanFields = {
   roasteryId: v.string(),
   roasteryName: v.string(),
@@ -52,9 +54,11 @@ export const saveRun = internalMutation({
       for (const old of await ctx.db.query("rates").take(10)) await ctx.db.delete(old._id);
       await ctx.db.insert("rates", rates);
     }
-    const runs = await ctx.db.query("syncRuns").order("desc").take(100);
-    for (const old of runs.slice(20)) await ctx.db.delete(old._id);
-    await ctx.db.insert("syncRuns", { scope, finishedAt: Date.now(), shops, failed });
+    const now = Date.now();
+    for (const old of await ctx.db.query("syncRuns").order("asc").take(50)) {
+      if (old.finishedAt < now - KEEP_RUNS_FOR) await ctx.db.delete(old._id);
+    }
+    await ctx.db.insert("syncRuns", { scope, finishedAt: now, shops, failed });
     return null;
   },
 });

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoasteriesRouteImport } from './routes/roasteries'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as TriedRouteImport } from './routes/tried'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const RoasteriesRoute = RoasteriesRouteImport.update({
   path: '/roasteries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TriedRoute = TriedRouteImport.update({
   id: '/tried',
   path: '/tried',
@@ -32,30 +38,34 @@ const TriedRoute = TriedRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/roasteries': typeof RoasteriesRoute
+  '/status': typeof StatusRoute
   '/tried': typeof TriedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/roasteries': typeof RoasteriesRoute
+  '/status': typeof StatusRoute
   '/tried': typeof TriedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/roasteries': typeof RoasteriesRoute
+  '/status': typeof StatusRoute
   '/tried': typeof TriedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/roasteries' | '/tried'
+  fullPaths: '/' | '/roasteries' | '/status' | '/tried'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/roasteries' | '/tried'
-  id: '__root__' | '/' | '/roasteries' | '/tried'
+  to: '/' | '/roasteries' | '/status' | '/tried'
+  id: '__root__' | '/' | '/roasteries' | '/status' | '/tried'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RoasteriesRoute: typeof RoasteriesRoute
+  StatusRoute: typeof StatusRoute
   TriedRoute: typeof TriedRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoasteriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tried': {
       id: '/tried'
       path: '/tried'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RoasteriesRoute: RoasteriesRoute,
+  StatusRoute: StatusRoute,
   TriedRoute: TriedRoute,
 }
 export const routeTree = rootRouteImport

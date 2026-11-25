@@ -10,6 +10,7 @@
 
 import type * as beans from "../beans.js";
 import type * as crons from "../crons.js";
+import type * as health from "../health.js";
 import type * as sync from "../sync.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   beans: typeof beans;
   crons: typeof crons;
+  health: typeof health;
   sync: typeof sync;
 }>;
 

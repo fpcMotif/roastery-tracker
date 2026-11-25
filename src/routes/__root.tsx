@@ -48,6 +48,7 @@ const VIEWS = [
   { to: "/", label: "New coffees" },
   { to: "/roasteries", label: "Roasteries" },
   { to: "/tried", label: "Tried" },
+  { to: "/status", label: "Status" },
 ] as const;
 
 function Shell() {
